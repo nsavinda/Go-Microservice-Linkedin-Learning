@@ -6,6 +6,7 @@ import (
 
 	"github.com/fpmoles/go-microservices/internal/database"
 	"github.com/fpmoles/go-microservices/internal/models"
+	"github.com/fpmoles/go-microservices/internal/websocket"
 	"github.com/labstack/echo/v4"
 )
 
@@ -60,6 +61,8 @@ func (s *EchoServer) registerRoutes() {
 
 	sg := s.echo.Group("/services")
 	sg.GET("", s.GetAllServices)
+
+	s.echo.GET("/ws", websocket.HandleWebSocket)
 
 }
 
