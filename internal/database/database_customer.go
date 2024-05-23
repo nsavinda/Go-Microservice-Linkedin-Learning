@@ -8,6 +8,7 @@ import (
 	"github.com/fpmoles/go-microservices/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func (c Client) GetAllCustomers(ctx context.Context, emailAddress string) ([]models.Customer, error) {
@@ -51,5 +52,39 @@ func (c Client) GetCustomerById(ctx context.Context, ID string) (*models.Custome
 
 	}
 	return customer, nil
+
+}
+
+func (c Client) UpdateCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
+	var customers []models.Customer
+	result := c.DB.WithContext(ctx).
+		Model(&customers).
+		Clauses(clause.Returning{}).
+		Where(models.Customer{CustomerID: customer.CustomerID}).
+		Updates(models.Customer{
+			FirstName: customer.FirstName,
+			LastName:  customer.LastName,
+			Email:     customer.Email,
+			Phone:     customer.Phone,
+			Address:   customer.Address,
+		})
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return nil, &dberrors.ConflictError{}
+		}
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, &dberrors.NotFoundError{Entity: "Customer", ID: customer.CustomerID}
+	}
+
+	return &customers[0], nil
+
+}
+
+func (c Client) DeleteCustomer(ctx context.Context, ID string) error {
+
+	return c.DB.WithContext(ctx).Delete(&models.Customer{CustomerID: ID}).Error
 
 }
