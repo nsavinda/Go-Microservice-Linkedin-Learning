@@ -47,9 +47,11 @@ func (s *EchoServer) registerRoutes() {
 	cg := s.echo.Group("/customers")
 	cg.GET("", s.GetAllCustomers)
 	cg.POST("", s.AddCustomer)
+	cg.GET("/:id", s.GetCustomerById)
 
 	pg := s.echo.Group("/products")
 	pg.GET("", s.GetAllProducts)
+	pg.POST("", s.AddProduct)
 
 	vg := s.echo.Group("/vendors")
 	vg.GET("", s.GetAllVendors)
